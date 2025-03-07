@@ -1,786 +1,1020 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trivia Battle - 1v1 Game</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    body {
-      background-color: #f5f5f5;
-      color: #333;
-      line-height: 1.6;
-    }
-    
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #2c3e50;
-    }
-    
-    .card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    
-    /* Lobby styles */
-    #lobby {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    
-    .form-group {
-      margin-bottom: 15px;
-      width: 100%;
-      max-width: 400px;
-    }
-    
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    
-    input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    
-    button {
-      background-color: #3498db;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s;
-    }
-    
-    button:hover {
-      background-color: #2980b9;
-    }
-    
-    /* Waiting room styles */
-    #waiting-room {
-      display: none;
-      text-align: center;
-    }
-    
-    .room-code {
-      font-size: 24px;
-      font-weight: bold;
-      margin: 10px 0;
-      color: #3498db;
-    }
-    
-    .player-list {
-      list-style: none;
-      background: #f9f9f9;
-      border-radius: 4px;
-      padding: 10px;
-      margin: 10px auto;
-      max-width: 400px;
-    }
-    
-    .player-list li {
-      padding: 5px;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .player-list li:last-child {
-      border-bottom: none;
-    }
-    
-    /* Game screen styles */
-    #game-screen {
-      display: none;
-    }
-    
-    .game-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    .timers {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
-    
-    .match-timer {
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
-    }
-    
-    .round-timer {
-      font-size: 24px;
-      font-weight: bold;
-      color: #e74c3c;
-      margin-top: 5px;
-    }
-    
-    .round-info {
-      font-size: 18px;
-      font-weight: bold;
-    }
-    
-    .scores {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 20px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    
-    .player-score {
-      text-align: center;
-      padding: 10px;
-      border-radius: 4px;
-      flex: 1;
-      margin: 0 10px;
-    }
-    
-    .player1 {
-      background-color: #3498db;
-      color: white;
-    }
-    
-    .player2 {
-      background-color: #e74c3c;
-      color: white;
-    }
-    
-    .question-card {
-      margin-bottom: 20px;
-      padding: 20px;
-    }
-    
-    .question {
-      font-size: 20px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    
-    .options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    
-    .option {
-      background-color: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 15px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      text-align: center;
-    }
-    
-    .option:hover {
-      background-color: #eee;
-    }
-    
-    .option.selected {
-      background-color: #3498db;
-      color: white;
-    }
-    
-    .option.locked {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-    
-    .game-players {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 20px;
-    }
-    
-    .game-player {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
-    }
-    
-    .player-status {
-      font-size: 14px;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    
-    .status-waiting {
-      background-color: #f9f9f9;
-    }
-    
-    .status-answered {
-      background-color: #f39c12;
-      color: white;
-    }
-    
-    .status-correct {
-      background-color: #2ecc71;
-      color: white;
-    }
-    
-    .status-incorrect {
-      background-color: #e74c3c;
-      color: white;
-    }
-    
-    /* Game over screen */
-    #game-over {
-      display: none;
-      text-align: center;
-    }
-    
-    .winner {
-      font-size: 32px;
-      margin: 20px 0;
-      color: #2c3e50;
-    }
-    
-    .final-scores {
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    
-    .play-again {
-      margin-top: 20px;
-    }
-    
-    /* Utility classes */
-    .hidden {
-      display: none;
-    }
-    
-    .message {
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 4px;
-      text-align: center;
-    }
-    
-    .error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    
-    .success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    
-    .info {
-      background-color: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Trivia Battle</h1>
-    
-    <!-- Lobby Screen -->
-    <div id="lobby" class="card">
-      <h2>Join a Game</h2>
-      <div class="form-group">
-        <label for="player-name">Your Name:</label>
-        <input type="text" id="player-name" placeholder="Enter your name" required>
-      </div>
-      <div class="form-group">
-        <label for="room-id">Room Code (optional):</label>
-        <input type="text" id="room-id" placeholder="Leave empty to join any available room">
-      </div>
-      <button id="join-btn">Join Game</button>
-      <div id="lobby-message" class="message hidden"></div>
-    </div>
-    
-    <!-- Waiting Room Screen -->
-    <div id="waiting-room" class="card">
-      <h2>Waiting for Opponent</h2>
-      <p>Share this room code with a friend:</p>
-      <div class="room-code" id="display-room-code">ABCD12</div>
-      <p id="waiting-message">Waiting for another player to join...</p>
-      <h3>Players</h3>
-      <ul class="player-list" id="waiting-players-list"></ul>
-    </div>
-    
-    <!-- Game Screen -->
-    <div id="game-screen">
-      <div class="game-header">
-        <div class="round-info" id="round-info">Round 1 of 4</div>
-        <div class="timers">
-          <div class="match-timer" id="match-timer">Match: 14:00</div>
-          <div class="round-timer" id="round-timer">Round: 2:00</div>
-        </div>
-      </div>
-      
-      <div class="scores">
-        <div class="player-score player1" id="player1-score">You: 0</div>
-        <div class="player-score player2" id="player2-score">Opponent: 0</div>
-      </div>
-      
-      <div class="question-card card">
-        <div class="question" id="question">Loading question...</div>
-        <div class="options" id="options">
-          <!-- Options will be added dynamically -->
-        </div>
-      </div>
-      
-      <div class="game-players">
-        <div class="game-player" id="game-player-status">
-          <span id="player-name-display">You</span>
-          <span class="player-status status-waiting" id="player-status">Waiting</span>
-        </div>
-        <div class="game-player" id="opponent-status">
-          <span id="opponent-name-display">Opponent</span>
-          <span class="player-status status-waiting" id="opponent-status-display">Waiting</span>
-        </div>
-      </div>
-      
-      <div id="game-message" class="message hidden"></div>
-    </div>
-    
-    <!-- Game Over Screen -->
-    <div id="game-over" class="card">
-      <h2>Game Over</h2>
-      <div class="winner" id="winner">You Win!</div>
-      <div class="final-scores" id="final-scores">
-        You: 3 - Opponent: 1
-      </div>
-      <div id="time-expired-message" class="hidden">
-        Time limit reached!
-      </div>
-      <button class="play-again" id="play-again">Play Again</button>
-    </div>
-  </div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    // Connect to Socket.IO server
-    const socket = io();
-    
-    // DOM Elements
-    const lobbyScreen = document.getElementById('lobby');
-    const waitingRoom = document.getElementById('waiting-room');
-    const gameScreen = document.getElementById('game-screen');
-    const gameOverScreen = document.getElementById('game-over');
-    
-    const playerNameInput = document.getElementById('player-name');
-    const roomIdInput = document.getElementById('room-id');
-    const joinBtn = document.getElementById('join-btn');
-    const lobbyMessage = document.getElementById('lobby-message');
-    
-    const displayRoomCode = document.getElementById('display-room-code');
-    const waitingMessage = document.getElementById('waiting-message');
-    const waitingPlayersList = document.getElementById('waiting-players-list');
-    
-    const roundInfo = document.getElementById('round-info');
-    const matchTimerDisplay = document.getElementById('match-timer');
-    const roundTimerDisplay = document.getElementById('round-timer');
-    const player1Score = document.getElementById('player1-score');
-    const player2Score = document.getElementById('player2-score');
-    const questionDisplay = document.getElementById('question');
-    const optionsContainer = document.getElementById('options');
-    const playerNameDisplay = document.getElementById('player-name-display');
-    const playerStatus = document.getElementById('player-status');
-    const opponentNameDisplay = document.getElementById('opponent-name-display');
-    const opponentStatusDisplay = document.getElementById('opponent-status-display');
-    const gameMessage = document.getElementById('game-message');
-    
-    const winnerDisplay = document.getElementById('winner');
-    const finalScores = document.getElementById('final-scores');
-    const timeExpiredMessage = document.getElementById('time-expired-message');
-    const playAgainBtn = document.getElementById('play-again');
-    
-    // Game state
-    let playerData = {
-      name: '',
-      role: '',
-      roomId: ''
-    };
-    
-    let gameState = {
-      isLocked: false,
-      currentRound: 0,
-      selectedOption: null,
-      opponent: null
-    };
-    
-    // Event Listeners
-    joinBtn.addEventListener('click', joinGame);
-    playAgainBtn.addEventListener('click', () => {
-      window.location.reload();
-    });
-    
-    // Functions
-    function joinGame() {
-      const name = playerNameInput.value.trim();
-      const roomId = roomIdInput.value.trim();
-      
-      if (!name) {
-        showMessage(lobbyMessage, 'Please enter your name', 'error');
-        return;
-      }
-      
-      playerData.name = name;
-      
-      // Emit join-room event
-      socket.emit('join-room', { name, roomId });
-    }
-    
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-    
-    function showMessage(element, message, type) {
-      element.textContent = message;
-      element.className = `message ${type}`;
-      element.classList.remove('hidden');
-      
-      // Auto-hide success and info messages after 5 seconds
-      if (type === 'success' || type === 'info') {
-        setTimeout(() => {
-          element.classList.add('hidden');
-        }, 5000);
-      }
-    }
-    
-    function updatePlayersList(players) {
-      // Clear list
-      waitingPlayersList.innerHTML = '';
-      
-      // Add players
-      players.forEach(player => {
-        const li = document.createElement('li');
-        li.textContent = player.name + (player.role === playerData.role ? ' (You)' : '');
-        li.dataset.id = player.id;
-        li.dataset.role = player.role;
-        waitingPlayersList.appendChild(li);
-        
-        // Store opponent data if this is not the current player
-        if (player.role !== playerData.role) {
-          gameState.opponent = player;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Battle - 1v1 Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-      });
-      
-      // Update waiting message
-      if (players.length < 2) {
-        waitingMessage.textContent = 'Waiting for another player to join...';
-      } else {
-        waitingMessage.textContent = 'Both players joined! Game starting soon...';
-      }
-    }
-    
-    function updateGameDisplay() {
-      // Update player names
-      playerNameDisplay.textContent = playerData.name + ' (You)';
-      
-      if (gameState.opponent) {
-        opponentNameDisplay.textContent = gameState.opponent.name;
-      } else {
-        opponentNameDisplay.textContent = 'Opponent';
-      }
-      
-      // Update score display based on player role
-      if (playerData.role === 'player1') {
-        player1Score.textContent = `You: 0`;
-        player2Score.textContent = `Opponent: 0`;
-      } else {
-        player1Score.textContent = `Opponent: 0`;
-        player2Score.textContent = `You: 0`;
-      }
-    }
-    
-    function displayQuestion(question, options) {
-      questionDisplay.textContent = question;
-      optionsContainer.innerHTML = '';
-      
-      options.forEach(option => {
-        const optionElement = document.createElement('div');
-        optionElement.className = 'option';
-        optionElement.textContent = option;
-        
-        optionElement.addEventListener('click', () => {
-          if (gameState.isLocked) return;
-          
-          // Clear previous selection
-          document.querySelectorAll('.option').forEach(opt => {
-            opt.classList.remove('selected');
-          });
-          
-          // Select this option
-          optionElement.classList.add('selected');
-          gameState.selectedOption = option;
-          
-          // Submit answer
-          submitAnswer(option);
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Lobby styles */
+        #lobby {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Waiting room styles */
+        #waiting-room {
+            display: none;
+            text-align: center;
+        }
+
+        .room-code {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #3498db;
+        }
+
+        .player-list {
+            list-style: none;
+            background: #f9f9f9;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px auto;
+            max-width: 400px;
+        }
+
+        .player-list li {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .player-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Game screen styles */
+        #game-screen {
+            display: none;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .timers {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .match-timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .round-timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-top: 5px;
+        }
+
+        .round-info {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .scores {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .player-score {
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .player1 {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .player2 {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .round-wins {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .round-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 5px;
+            background-color: #ddd;
+        }
+
+        .round-won {
+            background-color: #2ecc71;
+        }
+
+        .question-card {
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+
+        .question-image {
+            max-width: 100%;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .option {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .option:hover {
+            background-color: #eee;
+        }
+
+        .option.selected {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .option.locked {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .game-players {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .game-player {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .player-status {
+            font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .status-waiting {
+            background-color: #f9f9f9;
+        }
+
+        .status-answered {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .status-correct {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .status-incorrect {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        /* Game over screen */
+        #game-over {
+            display: none;
+            text-align: center;
+        }
+
+        .winner {
+            font-size: 32px;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+
+        .final-scores {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .play-again {
+            margin-top: 20px;
+        }
+
+        /* Utility classes */
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Subject selection styles */
+        .subject-selection {
+            margin: 15px 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .subject-btn {
+            padding: 10px;
+            border: 2px solid #3498db;
+            border-radius: 4px;
+            background: white;
+            color: #3498db;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .subject-btn.disabled {
+            border-color: #ccc;
+            color: #999;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .subject-btn.selected {
+            background: #3498db;
+            color: white;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: none;
+        }
+
+        .confirm-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .confirm-btn.visible {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Trivia Battle</h1>
+
+        <!-- Lobby Screen -->
+        <div id="lobby" class="card">
+            <h2>Join a Game</h2>
+            <div class="form-group">
+                <label for="player-name">Your Name:</label>
+                <input type="text" id="player-name" placeholder="Enter your name" required>
+            </div>
+            <div class="form-group">
+                <label for="room-id">Room Code (optional):</label>
+                <input type="text" id="room-id" placeholder="Leave empty to join any available room">
+            </div>
+            <div class="form-group">
+                <label>Select Subjects:</label>
+                <div class="subject-selection" id="subject-selection">
+                    <!-- Subject buttons will be added dynamically -->
+                </div>
+            </div>
+            <button id="join-btn">Join Game</button>
+            <div id="lobby-message" class="message hidden"></div>
+        </div>
+
+        <!-- Waiting Room Screen -->
+        <div id="waiting-room" class="card">
+            <h2>Waiting for Opponent</h2>
+            <p>Share this room code with a friend:</p>
+            <div class="room-code" id="display-room-code">ABCD12</div>
+            <p id="waiting-message">Waiting for another player to join...</p>
+            <h3>Players</h3>
+            <ul class="player-list" id="waiting-players-list"></ul>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen">
+            <div class="game-header">
+                <div class="round-info" id="round-info">Round 1 of 7</div>
+                <div class="timers">
+                    <div class="match-timer" id="match-timer">Match: 14:00</div>
+                    <div class="round-timer" id="round-timer">Round: 2:00</div>
+                </div>
+            </div>
+
+            <div class="round-wins">
+                <div id="player1-rounds">
+                    <span class="round-indicator" id="p1-round-1"></span>
+                    <span class="round-indicator" id="p1-round-2"></span>
+                    <span class="round-indicator" id="p1-round-3"></span>
+                    <span class="round-indicator" id="p1-round-4"></span>
+                </div>
+                <div id="player2-rounds">
+                    <span class="round-indicator" id="p2-round-1"></span>
+                    <span class="round-indicator" id="p2-round-2"></span>
+                    <span class="round-indicator" id="p2-round-3"></span>
+                    <span class="round-indicator" id="p2-round-4"></span>
+                </div>
+            </div>
+
+            <div class="scores">
+                <div class="player-score player1" id="player1-score">You: 0</div>
+                <div class="player-score player2" id="player2-score">Opponent: 0</div>
+            </div>
+
+            <div class="question-card card">
+                <img id="question-image" class="question-image" src="" alt="Question Image">
+                <div class="options" id="options">
+                    <div class="option" data-option="A">A</div>
+                    <div class="option" data-option="B">B</div>
+                    <div class="option" data-option="C">C</div>
+                    <div class="option" data-option="D">D</div>
+                    <button id="confirm-answer" class="confirm-btn">Confirm Answer</button>
+                </div>
+            </div>
+
+            <div class="game-players">
+                <div class="game-player" id="game-player-status">
+                    <span id="player-name-display">You</span>
+                    <span class="player-status status-waiting" id="player-status">Waiting</span>
+                </div>
+                <div class="game-player" id="opponent-status">
+                    <span id="opponent-name-display">Opponent</span>
+                    <span class="player-status status-waiting" id="opponent-status-display">Waiting</span>
+                </div>
+            </div>
+
+            <div id="game-message" class="message hidden"></div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over" class="card">
+            <h2>Game Over</h2>
+            <div class="winner" id="winner">You Win!</div>
+            <div class="final-scores" id="final-scores">
+                You: 4 - Opponent: 2
+            </div>
+            <div id="time-expired-message" class="hidden">
+                Time limit reached!
+            </div>
+            <button class="play-again" id="play-again">Play Again</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Connect to Socket.IO server
+        const socket = io();
+
+        // DOM Elements
+        const lobbyScreen = document.getElementById('lobby');
+        const waitingRoom = document.getElementById('waiting-room');
+        const gameScreen = document.getElementById('game-screen');
+        const gameOverScreen = document.getElementById('game-over');
+
+        const playerNameInput = document.getElementById('player-name');
+        const roomIdInput = document.getElementById('room-id');
+        const joinBtn = document.getElementById('join-btn');
+        const lobbyMessage = document.getElementById('lobby-message');
+        const subjectSelection = document.getElementById('subject-selection');
+
+        const displayRoomCode = document.getElementById('display-room-code');
+        const waitingMessage = document.getElementById('waiting-message');
+        const waitingPlayersList = document.getElementById('waiting-players-list');
+
+        const roundInfo = document.getElementById('round-info');
+        const matchTimerDisplay = document.getElementById('match-timer');
+        const roundTimerDisplay = document.getElementById('round-timer');
+        const player1Score = document.getElementById('player1-score');
+        const player2Score = document.getElementById('player2-score');
+        const questionImage = document.getElementById('question-image');
+        const optionsContainer = document.getElementById('options');
+        const playerNameDisplay = document.getElementById('player-name-display');
+        const playerStatus = document.getElementById('player-status');
+        const opponentNameDisplay = document.getElementById('opponent-name-display');
+        const opponentStatusDisplay = document.getElementById('opponent-status-display');
+        const gameMessage = document.getElementById('game-message');
+
+        // Round indicators
+        const player1RoundIndicators = [
+            document.getElementById('p1-round-1'),
+            document.getElementById('p1-round-2'),
+            document.getElementById('p1-round-3'),
+            document.getElementById('p1-round-4')
+        ];
+
+        const player2RoundIndicators = [
+            document.getElementById('p2-round-1'),
+            document.getElementById('p2-round-2'),
+            document.getElementById('p2-round-3'),
+            document.getElementById('p2-round-4')
+        ];
+
+        const winnerDisplay = document.getElementById('winner');
+        const finalScores = document.getElementById('final-scores');
+        const timeExpiredMessage = document.getElementById('time-expired-message');
+        const playAgainBtn = document.getElementById('play-again');
+
+        // Game state
+        let playerData = {
+            name: '',
+            role: '',
+            roomId: '',
+            selectedSubjects: []
+        };
+
+        let gameState = {
+            isLocked: false,
+            currentRound: 0,
+            selectedOption: null,
+            opponent: null,
+            canConfirm: false
+        };
+
+        let availableSubjects = [];
+
+        // Event Listeners
+        joinBtn.addEventListener('click', joinGame);
+        playAgainBtn.addEventListener('click', () => {
+            window.location.reload();
         });
-        
-        optionsContainer.appendChild(optionElement);
-      });
-      
-      // Reset player statuses
-      playerStatus.className = 'player-status status-waiting';
-      playerStatus.textContent = 'Waiting';
-      opponentStatusDisplay.className = 'player-status status-waiting';
-      opponentStatusDisplay.textContent = 'Waiting';
-    }
-    
-    function submitAnswer(answer) {
-      // Lock the UI to prevent multiple submissions
-      gameState.isLocked = true;
-      
-      // Update player status
-      playerStatus.className = 'player-status status-answered';
-      playerStatus.textContent = 'Answered';
-      
-      // Emit the answer to the server
-      socket.emit('submit-answer', answer);
-    }
-    
-    function updateScores(scores) {
-      if (playerData.role === 'player1') {
-        player1Score.textContent = `You: ${scores.player1}`;
-        player2Score.textContent = `Opponent: ${scores.player2}`;
-      } else {
-        player1Score.textContent = `Opponent: ${scores.player1}`;
-        player2Score.textContent = `You: ${scores.player2}`;
-      }
-    }
-    
-    function showScreen(screen) {
-      // Hide all screens
-      lobbyScreen.style.display = 'none';
-      waitingRoom.style.display = 'none';
-      gameScreen.style.display = 'none';
-      gameOverScreen.style.display = 'none';
-      
-      // Show the requested screen
-      screen.style.display = 'block';
-    }
-    
-    // Socket.IO event handlers
-    socket.on('error', (data) => {
-      showMessage(lobbyMessage, data.message, 'error');
-    });
-    
-    socket.on('room-joined', (data) => {
-      playerData.roomId = data.roomId;
-      playerData.role = data.role;
-      
-      displayRoomCode.textContent = data.roomId;
-      updatePlayersList(data.players);
-      
-      showScreen(waitingRoom);
-    });
-    
-    socket.on('players-update', (data) => {
-      updatePlayersList(data.players);
-    });
-    
-    socket.on('game-starting', (data) => {
-      updatePlayersList(data.players);
-      showMessage(gameMessage, 'Game is starting!', 'info');
-      
-      // Update game display with player names
-      updateGameDisplay();
-      
-      // Switch to game screen
-      showScreen(gameScreen);
-    });
-    
-    socket.on('new-round', (data) => {
-      // Reset game state
-      gameState.isLocked = false;
-      gameState.currentRound = data.round;
-      gameState.selectedOption = null;
-      
-      // Update UI
-      roundInfo.textContent = `Round ${data.round} of 4`;
-      roundTimerDisplay.textContent = `Round: ${formatTime(data.roundTimeRemaining)}`;
-      displayQuestion(data.question, data.options);
-      
-      // Show message
-      showMessage(gameMessage, `Round ${data.round} started!`, 'info');
-    });
-    
-    socket.on('match-timer-update', (timeRemaining) => {
-      matchTimerDisplay.textContent = `Match: ${formatTime(timeRemaining)}`;
-      
-      // Make match timer red when less than 60 seconds
-      if (timeRemaining <= 60) {
-        matchTimerDisplay.style.color = '#e74c3c';
-      } else {
-        matchTimerDisplay.style.color = '#333';
-      }
-    });
-    
-    socket.on('round-timer-update', (timeRemaining) => {
-      roundTimerDisplay.textContent = `Round: ${formatTime(timeRemaining)}`;
-      
-      // Make round timer red when less than 30 seconds
-      if (timeRemaining <= 30) {
-        roundTimerDisplay.style.color = '#e74c3c';
-      } else {
-        roundTimerDisplay.style.color = '#333';
-      }
-    });
-    
-    socket.on('answer-result', (data) => {
-      if (data.correct) {
-        showMessage(gameMessage, data.message, 'success');
-        playerStatus.className = 'player-status status-correct';
-        playerStatus.textContent = 'Correct';
-      } else {
-        showMessage(gameMessage, data.message, 'error');
-        
-        if (data.message.includes('locked') || data.message.includes('already answered')) {
-          playerStatus.className = 'player-status status-incorrect';
-          playerStatus.textContent = 'Incorrect';
+
+        // Initialize subject selection
+        function initializeSubjectSelection(subjects) {
+            // Clear existing buttons
+            subjectSelection.innerHTML = '';
+
+            // Add "All Available" button
+            const allSubjectsBtn = document.createElement('button');
+            allSubjectsBtn.className = 'subject-btn selected';
+            allSubjectsBtn.dataset.subject = 'All';
+            allSubjectsBtn.textContent = 'All Available';
+            subjectSelection.appendChild(allSubjectsBtn);
+
+            // Add individual subject buttons
+            ['Physics', 'Chemistry', 'Maths'].forEach(subject => {
+                const btn = document.createElement('button');
+                btn.className = `subject-btn${subjects.includes(subject) ? '' : ' disabled'}`;
+                btn.dataset.subject = subject;
+                btn.textContent = subject;
+                subjectSelection.appendChild(btn);
+            });
+
+            // Set initial selected subjects
+            playerData.selectedSubjects = subjects;
+
+            // Add click handlers
+            document.querySelectorAll('.subject-btn:not(.disabled)').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.subject === 'All') {
+                        // If 'All' is selected, deselect others
+                        document.querySelectorAll('.subject-btn').forEach(b => {
+                            b.classList.remove('selected');
+                        });
+                        btn.classList.add('selected');
+                        playerData.selectedSubjects = subjects;
+                    } else {
+                        // If specific subject is selected, deselect 'All'
+                        const allBtn = document.querySelector('.subject-btn[data-subject="All"]');
+                        allBtn.classList.remove('selected');
+
+                        btn.classList.toggle('selected');
+
+                        // Update selected subjects
+                        playerData.selectedSubjects = Array.from(
+                            document.querySelectorAll('.subject-btn.selected:not([data-subject="All"])')
+                        ).map(b => b.dataset.subject);
+
+                        // If no subjects selected, select 'All'
+                        if (playerData.selectedSubjects.length === 0) {
+                            allBtn.classList.add('selected');
+                            playerData.selectedSubjects = subjects;
+                        }
+                    }
+                });
+            });
         }
-      }
-    });
-    
-    socket.on('player-locked', (data) => {
-      // Update status for the locked player
-      if (data.playerId === socket.id) {
-        playerStatus.className = 'player-status status-incorrect';
-        playerStatus.textContent = 'Incorrect';
-      } else if (gameState.opponent && data.playerId === gameState.opponent.id) {
-        opponentStatusDisplay.className = 'player-status status-incorrect';
-        opponentStatusDisplay.textContent = 'Incorrect';
-      }
-    });
-    
-    socket.on('player-answered', (data) => {
-      // Update status for the player who answered
-      if (data.playerId !== socket.id && gameState.opponent && data.playerId === gameState.opponent.id) {
-        opponentStatusDisplay.className = 'player-status status-answered';
-        opponentStatusDisplay.textContent = 'Answered';
-      }
-    });
-    
-    socket.on('round-update', (data) => {
-      // Update scores
-      updateScores(data.scores);
-      
-      // Process results for each player
-      Object.keys(data.playerResults).forEach(playerId => {
-        const result = data.playerResults[playerId];
-        
-        // Update player status based on results
-        if (playerId === socket.id) {
-          if (result.isCorrect) {
-            playerStatus.className = 'player-status status-correct';
-            playerStatus.textContent = 'Correct';
-          } else if (result.answer !== "No answer") {
-            playerStatus.className = 'player-status status-incorrect';
-            playerStatus.textContent = 'Incorrect';
-          }
-        } else if (gameState.opponent && playerId === gameState.opponent.id) {
-          if (result.isCorrect) {
-            opponentStatusDisplay.className = 'player-status status-correct';
-            opponentStatusDisplay.textContent = 'Correct';
-          } else if (result.answer !== "No answer") {
-            opponentStatusDisplay.className = 'player-status status-incorrect';
-            opponentStatusDisplay.textContent = 'Incorrect';
-          }
+
+        // Handle available subjects
+        socket.on('available-subjects', (data) => {
+            availableSubjects = data.subjects;
+            initializeSubjectSelection(availableSubjects);
+        });
+
+        // Add confirm button functionality
+        const confirmBtn = document.getElementById('confirm-answer');
+        confirmBtn.addEventListener('click', () => {
+            if (!gameState.selectedOption || !gameState.canConfirm) return;
+
+            submitAnswer(gameState.selectedOption);
+            gameState.canConfirm = false;
+            confirmBtn.classList.remove('visible');
+        });
+
+        // Add event listeners to option buttons
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', () => {
+                if (gameState.isLocked) return;
+
+                // Clear previous selection
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+
+                // Select this option
+                option.classList.add('selected');
+                gameState.selectedOption = option.dataset.option;
+
+                // Show confirm button
+                gameState.canConfirm = true;
+                confirmBtn.classList.add('visible');
+            });
+        });
+
+        // Functions
+        function joinGame() {
+            const name = playerNameInput.value.trim();
+            const roomId = roomIdInput.value.trim();
+
+            if (!name) {
+                showMessage(lobbyMessage, 'Please enter your name', 'error');
+                return;
+            }
+
+            playerData.name = name;
+
+            // Emit join-room event with selected subjects
+            socket.emit('join-room', {
+                name,
+                roomId,
+                subjects: playerData.selectedSubjects
+            });
         }
-      });
-      
-      // Show round results message
-      let message = `Round ${data.round} complete!`;
-      if (data.timeExpired) {
-        message += " Time's up!";
-      }
-      message += " Next round starting soon...";
-      
-      showMessage(gameMessage, message, 'info');
-    });
-    
-    socket.on('player-left', (data) => {
-      if (data.players.length < 2) {
-        showMessage(gameMessage, `${data.playerName} has left the game.`, 'error');
-        
-        // If in waiting room, update the player list
-        if (waitingRoom.style.display === 'block') {
-          updatePlayersList(data.players);
-        } else {
-          // If game was in progress, show game over with forfeit message
-          winnerDisplay.textContent = 'Opponent left the game. You win!';
-          showScreen(gameOverScreen);
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
-      }
-    });
-    
-    socket.on('game-over', (data) => {
-      // Update final scores
-      let yourScore, opponentScore;
-      
-      if (playerData.role === 'player1') {
-        yourScore = data.scores.player1;
-        opponentScore = data.scores.player2;
-      } else {
-        yourScore = data.scores.player2;
-        opponentScore = data.scores.player1;
-      }
-      
-      finalScores.textContent = `You: ${yourScore} - Opponent: ${opponentScore}`;
-      
-      // Display winner
-      if (data.winner === playerData.role) {
-        winnerDisplay.textContent = 'You Win!';
-      } else if (data.winner === null) {
-        winnerDisplay.textContent = 'It\'s a Tie!';
-      } else {
-        winnerDisplay.textContent = 'Opponent Wins!';
-      }
-      
-      // Show time expired message if applicable
-      if (data.timeExpired) {
-        timeExpiredMessage.textContent = 'Match time limit reached!';
-        timeExpiredMessage.classList.remove('hidden');
-      } else {
-        timeExpiredMessage.classList.add('hidden');
-      }
-      
-      // Show game over screen
-      showScreen(gameOverScreen);
-    });
-  </script>
+
+        function showMessage(element, message, type) {
+            element.textContent = message;
+            element.className = `message ${type}`;
+            element.classList.remove('hidden');
+
+            // Auto-hide success and info messages after 5 seconds
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    element.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        function updatePlayersList(players) {
+            // Clear list
+            waitingPlayersList.innerHTML = '';
+
+            // Add players
+            players.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = player.name + (player.role === playerData.role ? ' (You)' : '');
+                li.dataset.id = player.id;
+                li.dataset.role = player.role;
+                waitingPlayersList.appendChild(li);
+
+                // Store opponent data if this is not the current player
+                if (player.role !== playerData.role) {
+                    gameState.opponent = player;
+                }
+            });
+
+            // Update waiting message
+            if (players.length < 2) {
+                waitingMessage.textContent = 'Waiting for another player to join...';
+            } else {
+                waitingMessage.textContent = 'Both players joined! Game starting soon...';
+            }
+        }
+
+        function updateGameDisplay() {
+            // Update player names
+            playerNameDisplay.textContent = playerData.name + ' (You)';
+
+            if (gameState.opponent) {
+                opponentNameDisplay.textContent = gameState.opponent.name;
+            } else {
+                opponentNameDisplay.textContent = 'Opponent';
+            }
+
+            // Update score display based on player role
+            if (playerData.role === 'player1') {
+                player1Score.textContent = `You: 0`;
+                player2Score.textContent = `Opponent: 0`;
+            } else {
+                player1Score.textContent = `Opponent: 0`;
+                player2Score.textContent = `You: 0`;
+            }
+        }
+
+        function updateRoundWins(roundWins) {
+            // Update round indicators for player 1
+            for (let i = 0; i < player1RoundIndicators.length; i++) {
+                if (i < roundWins.player1) {
+                    player1RoundIndicators[i].classList.add('round-won');
+                } else {
+                    player1RoundIndicators[i].classList.remove('round-won');
+                }
+            }
+
+            // Update round indicators for player 2
+            for (let i = 0; i < player2RoundIndicators.length; i++) {
+                if (i < roundWins.player2) {
+                    player2RoundIndicators[i].classList.add('round-won');
+                } else {
+                    player2RoundIndicators[i].classList.remove('round-won');
+                }
+            }
+        }
+
+        function displayQuestionImage(imagePath) {
+            questionImage.src = imagePath;
+
+            // Reset option selections
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+                option.classList.remove('locked');
+            });
+
+            // Reset player statuses
+            playerStatus.className = 'player-status status-waiting';
+            playerStatus.textContent = 'Waiting';
+            opponentStatusDisplay.className = 'player-status status-waiting';
+            opponentStatusDisplay.textContent = 'Waiting';
+        }
+
+        function submitAnswer(answer) {
+            // Lock the UI to prevent multiple submissions
+            gameState.isLocked = true;
+
+            // Update player status
+            playerStatus.className = 'player-status status-answered';
+            playerStatus.textContent = 'Answered';
+
+            // Emit the answer to the server
+            socket.emit('submit-answer', answer);
+        }
+
+        function updateScores(scores) {
+            if (playerData.role === 'player1') {
+                player1Score.textContent = `You: ${scores.player1}`;
+                player2Score.textContent = `Opponent: ${scores.player2}`;
+            } else {
+                player1Score.textContent = `Opponent: ${scores.player1}`;
+                player2Score.textContent = `You: ${scores.player2}`;
+            }
+        }
+
+        function showScreen(screen) {
+            // Hide all screens
+            lobbyScreen.style.display = 'none';
+            waitingRoom.style.display = 'none';
+            gameScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+
+            // Show the requested screen
+            screen.style.display = 'block';
+        }
+
+        // Socket.IO event handlers
+        socket.on('error', (data) => {
+            showMessage(lobbyMessage, data.message, 'error');
+        });
+
+        socket.on('room-joined', (data) => {
+            playerData.roomId = data.roomId;
+            playerData.role = data.role;
+            availableSubjects = data.availableSubjects;
+
+            displayRoomCode.textContent = data.roomId;
+            updatePlayersList(data.players);
+
+            showScreen(waitingRoom);
+        });
+
+        socket.on('players-update', (data) => {
+            updatePlayersList(data.players);
+        });
+
+        socket.on('game-starting', (data) => {
+            updatePlayersList(data.players);
+            showMessage(gameMessage, 'Game is starting!', 'info');
+
+            // Update game display with player names
+            updateGameDisplay();
+
+            // Switch to game screen
+            showScreen(gameScreen);
+        });
+
+        socket.on('new-round', (data) => {
+            // Reset game state
+            gameState.isLocked = false;
+            gameState.currentRound = data.round;
+            gameState.selectedOption = null;
+            gameState.canConfirm = false;
+            confirmBtn.classList.remove('visible');
+
+            // Update UI
+            roundInfo.textContent = `Round ${data.round} of 7`;
+            roundTimerDisplay.textContent = `Round: ${formatTime(data.roundTimeRemaining)}`;
+            displayQuestionImage(data.questionImage);
+            updateRoundWins(data.roundWins);
+
+            // Show message
+            showMessage(gameMessage, `Round ${data.round} started!`, 'info');
+        });
+
+        socket.on('match-timer-update', (timeRemaining) => {
+            matchTimerDisplay.textContent = `Match: ${formatTime(timeRemaining)}`;
+
+            // Make match timer red when less than 60 seconds
+            if (timeRemaining <= 60) {
+                matchTimerDisplay.style.color = '#e74c3c';
+            } else {
+                matchTimerDisplay.style.color = '#333';
+            }
+        });
+
+        socket.on('round-timer-update', (timeRemaining) => {
+            roundTimerDisplay.textContent = `Round: ${formatTime(timeRemaining)}`;
+
+            // Make round timer red when less than 30 seconds
+            if (timeRemaining <= 30) {
+                roundTimerDisplay.style.color = '#e74c3c';
+            } else {
+                roundTimerDisplay.style.color = '#333';
+            }
+        });
+
+        socket.on('answer-result', (data) => {
+            if (data.correct) {
+                showMessage(gameMessage, data.message, 'success');
+                playerStatus.className = 'player-status status-correct';
+                playerStatus.textContent = 'Correct';
+            } else {
+                showMessage(gameMessage, data.message, 'error');
+
+                if (data.message.includes('locked') || data.message.includes('already answered')) {
+                    playerStatus.className = 'player-status status-incorrect';
+                    playerStatus.textContent = 'Incorrect';
+                }
+            }
+        });
+
+        socket.on('player-locked', (data) => {
+            // Update status for the locked player
+            if (data.playerId === socket.id) {
+                playerStatus.className = 'player-status status-incorrect';
+                playerStatus.textContent = 'Incorrect';
+            } else if (gameState.opponent && data.playerId === gameState.opponent.id) {
+                opponentStatusDisplay.className = 'player-status status-incorrect';
+                opponentStatusDisplay.textContent = 'Incorrect';
+            }
+        });
+
+        socket.on('player-answered', (data) => {
+            // Update status for the player who answered
+            if (data.playerId !== socket.id && gameState.opponent && data.playerId === gameState.opponent.id) {
+                opponentStatusDisplay.className = 'player-status status-answered';
+                opponentStatusDisplay.textContent = 'Answered';
+            }
+        });
+
+        socket.on('round-update', (data) => {
+            // Update scores
+            updateScores(data.scores);
+
+            // Update round wins
+            updateRoundWins(data.roundWins);
+
+            // Process results for each player
+            Object.keys(data.playerResults).forEach(playerId => {
+                const result = data.playerResults[playerId];
+
+                // Update player status based on results
+                if (playerId === socket.id) {
+                    if (result.isCorrect) {
+                        playerStatus.className = 'player-status status-correct';
+                        playerStatus.textContent = 'Correct';
+                    } else if (result.answer !== "No answer") {
+                        playerStatus.className = 'player-status status-incorrect';
+                        playerStatus.textContent = 'Incorrect';
+                    }
+                } else if (gameState.opponent && playerId === gameState.opponent.id) {
+                    if (result.isCorrect) {
+                        opponentStatusDisplay.className = 'player-status status-correct';
+                        opponentStatusDisplay.textContent = 'Correct';
+                    } else if (result.answer !== "No answer") {
+                        opponentStatusDisplay.className = 'player-status status-incorrect';
+                        opponentStatusDisplay.textContent = 'Incorrect';
+                    }
+                }
+            });
+
+            // Show round results message
+            let message = `Round ${data.round} complete!`;
+            if (data.roundWinner) {
+                const winnerName = data.roundWinner === playerData.role ? 'You' : 'Opponent';
+                message += ` ${winnerName} won this round!`;
+            } else {
+                message += " It's a tie!";
+            }
+
+            if (data.timeExpired) {
+                message += " Time's up!";
+            }
+
+            message += " Next round starting soon...";
+
+            showMessage(gameMessage, message, 'info');
+        });
+
+        socket.on('player-left', (data) => {
+            if (data.players.length < 2) {
+                showMessage(gameMessage, `${data.playerName} has left the game.`, 'error');
+
+                // If in waiting room, update the player list
+                if (waitingRoom.style.display === 'block') {
+                    updatePlayersList(data.players);
+                } else {
+                    // If game was in progress, show game over with forfeit message
+                    winnerDisplay.textContent = 'Opponent left the game. You win!';
+                    showScreen(gameOverScreen);
+                }
+            }
+        });
+
+        socket.on('game-over', (data) => {
+            // Update final scores based on round wins
+            let yourRoundWins, opponentRoundWins;
+
+            if (playerData.role === 'player1') {
+                yourRoundWins = data.roundWins.player1;
+                opponentRoundWins = data.roundWins.player2;
+            } else {
+                yourRoundWins = data.roundWins.player2;
+                opponentRoundWins = data.roundWins.player1;
+            }
+
+            finalScores.textContent = `You: ${yourRoundWins} - Opponent: ${opponentRoundWins}`;
+
+            // Display winner
+            if (data.winner === playerData.role) {
+                winnerDisplay.textContent = 'You Win!';
+            } else if (data.winner === null) {
+                winnerDisplay.textContent = 'It\'s a Tie!';
+            } else {
+                winnerDisplay.textContent = 'Opponent Wins!';
+            }
+
+            // Show time expired message if applicable
+            if (data.timeExpired) {
+                timeExpiredMessage.textContent = 'Match time limit reached!';
+                timeExpiredMessage.classList.remove('hidden');
+            } else {
+                timeExpiredMessage.classList.add('hidden');
+            }
+
+            // Show game over screen
+            showScreen(gameOverScreen);
+        });
+    </script>
 </body>
+
 </html>

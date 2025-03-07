@@ -1,7 +1,7 @@
 {
   "name": "trivia-battle",
   "version": "1.0.0",
-  "description": "A 1v1 multiplayer trivia battle game",
+  "description": "A 1v1 multiplayer trivia battle game with best-of-7 format",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
