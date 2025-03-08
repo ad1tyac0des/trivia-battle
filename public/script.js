@@ -607,5 +607,3 @@ function displayQuestionHistory(questionHistory) {
         questionHistoryContainer.appendChild(questionItem);
     });
 }
-
-// ... existing code ...

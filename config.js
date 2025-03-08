@@ -1,9 +1,8 @@
-// Question configuration with direct URLs
 // Format: { url: 'URL_TO_IMAGE', answer: 'CorrectOption' }
 
-const MIN_QUESTIONS_REQUIRED = 7;  // Minimum questions needed for a subject
+const MIN_QUESTIONS_REQUIRED = 7;
 
-// Define questions with direct URLs, organized by subject
+// Define questions with direct URLs
 const physicsQuestions = [
     { url: 'https://i.imgur.com/okFdmAg.png', answer: 'C' },
     { url: 'https://i.imgur.com/AXkgH1a.png', answer: 'B' },
@@ -15,17 +14,9 @@ const physicsQuestions = [
 ];
 
 const chemistryQuestions = [
-    // Add your chemistry questions here
-    // Example:
-    // { url: 'https://example.com/chemistry/question1.png', answer: 'A' },
-    // { url: 'https://example.com/chemistry/question2.png', answer: 'B' },
 ];
 
 const mathsQuestions = [
-    // Add your mathematics questions here
-    // Example:
-    // { url: 'https://example.com/maths/question1.png', answer: 'D' },
-    // { url: 'https://example.com/maths/question2.png', answer: 'C' },
 ];
 
 // Organize questions by subject
