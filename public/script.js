@@ -50,6 +50,9 @@ const finalScores = document.getElementById('final-scores');
 const timeExpiredMessage = document.getElementById('time-expired-message');
 const playAgainBtn = document.getElementById('play-again');
 
+// Add new DOM elements
+const questionHistoryContainer = document.getElementById('question-history-container');
+
 // Game state
 let playerData = {
     name: '',
@@ -522,7 +525,75 @@ socket.on('game-over', (data) => {
     } else {
         timeExpiredMessage.classList.add('hidden');
     }
+    
+    // Display question history
+    displayQuestionHistory(data.questionHistory);
 
     // Show game over screen
     showScreen(gameOverScreen);
 });
+
+// Function to display question history
+function displayQuestionHistory(questionHistory) {
+    // Clear previous history
+    questionHistoryContainer.innerHTML = '';
+    
+    if (!questionHistory || questionHistory.length === 0) {
+        questionHistoryContainer.innerHTML = '<p>No questions were answered in this game.</p>';
+        return;
+    }
+    
+    // Sort by round number
+    const sortedHistory = [...questionHistory].sort((a, b) => a.round - b.round);
+    
+    // Create elements for each question
+    sortedHistory.forEach(question => {
+        const questionItem = document.createElement('div');
+        questionItem.className = 'question-item';
+        
+        // Create round header
+        const roundHeader = document.createElement('h4');
+        roundHeader.textContent = `Round ${question.round}`;
+        questionItem.appendChild(roundHeader);
+        
+        // Create image
+        const image = document.createElement('img');
+        image.src = question.imagePath;
+        image.alt = `Question from Round ${question.round}`;
+        image.className = 'question-image-small';
+        questionItem.appendChild(image);
+        
+        // Create answer summary
+        const answerSummary = document.createElement('div');
+        answerSummary.className = 'answer-summary';
+        
+        // Add correct answer
+        const correctAnswer = document.createElement('div');
+        correctAnswer.className = 'correct-answer';
+        correctAnswer.textContent = `Correct Answer: ${question.correctAnswer}`;
+        answerSummary.appendChild(correctAnswer);
+        
+        // Add player answers
+        const playerAnswers = question.playerAnswers;
+        for (const playerName in playerAnswers) {
+            const playerAnswer = document.createElement('div');
+            const isCorrect = playerAnswers[playerName] === question.correctAnswer;
+            playerAnswer.className = `player-answer ${isCorrect ? 'correct' : 'incorrect'}`;
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = playerName === playerData.name ? 'You' : playerName;
+            
+            const answerSpan = document.createElement('span');
+            answerSpan.textContent = `Answer: ${playerAnswers[playerName]}`;
+            
+            playerAnswer.appendChild(nameSpan);
+            playerAnswer.appendChild(answerSpan);
+            answerSummary.appendChild(playerAnswer);
+        }
+        
+        questionItem.appendChild(answerSummary);
+        questionHistoryContainer.appendChild(questionItem);
+    });
+}
+
+// ... existing code ...

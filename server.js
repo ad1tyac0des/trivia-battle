@@ -92,6 +92,11 @@ function getRandomQuestion(room) {
     if (!room.usedQuestions) {
         room.usedQuestions = [];
     }
+    
+    // Initialize questionHistory array if it doesn't exist
+    if (!room.questionHistory) {
+        room.questionHistory = [];
+    }
 
     // Get questions from selected subjects
     let availableQuestions = [];
@@ -196,6 +201,14 @@ function startRound(roomId) {
     console.log(`[Round ${room.currentRound}] Correct answer: ${question.correctAnswer}`);
 
     room.currentQuestion = question;
+    
+    // Add question to history with round number
+    room.questionHistory.push({
+        round: room.currentRound,
+        imagePath: question.imagePath,
+        correctAnswer: question.correctAnswer,
+        playerAnswers: {} // Will be filled as players answer
+    });
 
     // Send the new question to all players
     io.to(roomId).emit('new-round', {
@@ -341,13 +354,32 @@ function endGame(roomId, timeExpired) {
     const player1 = room.players.find(p => p.role === 'player1');
     const player2 = room.players.find(p => p.role === 'player2');
 
+    // Prepare question history with player names
+    const questionHistoryWithNames = room.questionHistory.map(q => {
+        const playerAnswersWithNames = {};
+        if (player1 && q.playerAnswers[player1.id] !== undefined) {
+            playerAnswersWithNames[player1.name] = q.playerAnswers[player1.id];
+        }
+        if (player2 && q.playerAnswers[player2.id] !== undefined) {
+            playerAnswersWithNames[player2.name] = q.playerAnswers[player2.id];
+        }
+        
+        return {
+            round: q.round,
+            imagePath: q.imagePath,
+            correctAnswer: q.correctAnswer,
+            playerAnswers: playerAnswersWithNames
+        };
+    });
+
     // Send game over event
     io.to(roomId).emit('game-over', {
         winner: winner,
         roundWins: room.roundWins,
         player1: player1 ? player1.name : 'Player 1',
         player2: player2 ? player2.name : 'Player 2',
-        timeExpired: timeExpired
+        timeExpired: timeExpired,
+        questionHistory: questionHistoryWithNames
     });
 
     // Keep the room for a while before cleaning up
@@ -517,6 +549,12 @@ io.on('connection', (socket) => {
 
         // Store the player's answer
         room.playerAnswers[player.id] = answer;
+        
+        // Also store in question history
+        const currentQuestionHistory = room.questionHistory[room.currentRound - 1];
+        if (currentQuestionHistory) {
+            currentQuestionHistory.playerAnswers[player.id] = answer;
+        }
 
         // Check if answer is correct
         const isCorrect = answer === room.currentQuestion.correctAnswer;
