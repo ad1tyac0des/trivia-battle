@@ -1,46 +1,61 @@
-// Question answers configuration
-// Format: '/assets/Subject/filename': 'CorrectOption'
-
-// Only include answers for questions that exist in the assets folder
-const correctAnswerPhysics = ['C', 'B', 'C', 'A', 'B', 'A', 'B'];  // 7 physics questions
-const correctAnswerChemistry = [];  // No chemistry questions yet
-const correctAnswerMaths = [];      // No math questions yet
+// Question configuration with direct URLs
+// Format: { url: 'URL_TO_IMAGE', answer: 'CorrectOption' }
 
 const MIN_QUESTIONS_REQUIRED = 7;  // Minimum questions needed for a subject
+
+// Define questions with direct URLs, organized by subject
+const physicsQuestions = [
+    { url: 'https://i.imgur.com/okFdmAg.png', answer: 'C' },
+    { url: 'https://i.imgur.com/AXkgH1a.png', answer: 'B' },
+    { url: 'https://i.imgur.com/hOw44zn.png', answer: 'C' },
+    { url: 'https://i.imgur.com/WJehbW7.png', answer: 'A' },
+    { url: 'https://i.imgur.com/1fRFUdx.png', answer: 'B' },
+    { url: 'https://i.imgur.com/0ZiPKkx.png', answer: 'A' },
+    { url: 'https://i.imgur.com/nWEVcGe.png', answer: 'B' },
+];
+
+const chemistryQuestions = [
+    // Add your chemistry questions here
+    // Example:
+    // { url: 'https://example.com/chemistry/question1.png', answer: 'A' },
+    // { url: 'https://example.com/chemistry/question2.png', answer: 'B' },
+];
+
+const mathsQuestions = [
+    // Add your mathematics questions here
+    // Example:
+    // { url: 'https://example.com/maths/question1.png', answer: 'D' },
+    // { url: 'https://example.com/maths/question2.png', answer: 'C' },
+];
+
+// Organize questions by subject
+const questionsBySubject = {
+    Physics: physicsQuestions.map(q => q.url),
+    Chemistry: chemistryQuestions.map(q => q.url),
+    Maths: mathsQuestions.map(q => q.url)
+};
 
 // Function to generate question answers mapping
 function generateQuestionAnswers() {
     const answers = {};
-
-    // Only generate mappings for subjects that have questions
-    if (correctAnswerPhysics.length > 0) {
-        correctAnswerPhysics.forEach((answer, index) => {
-            answers[`/assets/Physics/pq${index + 1}.png`] = answer;
-        });
-    }
-
-    if (correctAnswerChemistry.length > 0) {
-        correctAnswerChemistry.forEach((answer, index) => {
-            answers[`/assets/Chemistry/cq${index + 1}.png`] = answer;
-        });
-    }
-
-    if (correctAnswerMaths.length > 0) {
-        correctAnswerMaths.forEach((answer, index) => {
-            answers[`/assets/Maths/mq${index + 1}.png`] = answer;
-        });
-    }
-
+    
+    // Add answers from each subject
+    const allQuestions = [...physicsQuestions, ...chemistryQuestions, ...mathsQuestions];
+    allQuestions.forEach(question => {
+        answers[question.url] = question.answer;
+    });
+    
     return answers;
 }
 
+// Generate the question answers mapping
 const questionAnswers = generateQuestionAnswers();
 
 // Get question counts for each subject
 const questionCounts = {
-    Physics: correctAnswerPhysics.length,
-    Chemistry: correctAnswerChemistry.length,
-    Maths: correctAnswerMaths.length
+    Physics: physicsQuestions.length,
+    Chemistry: chemistryQuestions.length,
+    Maths: mathsQuestions.length
 };
 
 // Determine which subjects have enough questions
@@ -56,5 +71,6 @@ module.exports = {
     questionAnswers,
     questionCounts,
     availableSubjects,
+    questionsBySubject,
     MIN_QUESTIONS_REQUIRED
 }; 

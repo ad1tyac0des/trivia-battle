@@ -2,8 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const path = require('path');
-const fs = require('fs');
-const { questionAnswers, availableSubjects, MIN_QUESTIONS_REQUIRED } = require('./config');
+const { questionAnswers, availableSubjects, questionsBySubject, MIN_QUESTIONS_REQUIRED } = require('./config');
 
 const app = express();
 const server = http.createServer(app);
@@ -11,7 +10,6 @@ const io = socketIO(server);
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Game constants
 const MAX_PLAYERS = 2; // 1v1 format
@@ -23,38 +21,8 @@ const ROUND_TIME = 2 * 60; // 2 minutes per round in seconds
 // Game rooms storage
 const gameRooms = {};
 
-// Question image paths
-const questionImages = {
-    Physics: [],
-    Chemistry: [],
-    Maths: []
-};
-
-// Load question image paths
-function loadQuestionImages() {
-    const subjects = ['Physics', 'Chemistry', 'Maths'];
-
-    subjects.forEach(subject => {
-        try {
-            const folderPath = path.join(__dirname, 'assets', subject);
-            if (fs.existsSync(folderPath)) {
-                const files = fs.readdirSync(folderPath);
-                questionImages[subject] = files.map(file => `/assets/${subject}/${file}`);
-            }
-        } catch (err) {
-            console.error(`Error loading ${subject} questions:`, err);
-        }
-    });
-
-    console.log('Loaded question images:', {
-        Physics: questionImages.Physics.length,
-        Chemistry: questionImages.Chemistry.length,
-        Maths: questionImages.Maths.length
-    });
-}
-
-// Load question images on startup
-loadQuestionImages();
+// No need to load question images from local files anymore
+// The questions are now defined in the config.js file with direct URLs
 
 // Generate a random room code
 function generateRoomCode() {
@@ -135,8 +103,8 @@ function getRandomQuestion(room) {
 
     // Get questions from selected subjects
     room.subjects.forEach(subject => {
-        if (questionImages[subject] && questionImages[subject].length > 0) {
-            availableQuestions = [...availableQuestions, ...questionImages[subject]];
+        if (questionsBySubject[subject] && questionsBySubject[subject].length > 0) {
+            availableQuestions = [...availableQuestions, ...questionsBySubject[subject]];
         }
     });
 
@@ -152,13 +120,13 @@ function getRandomQuestion(room) {
     }
 
     const randomIndex = Math.floor(Math.random() * unusedQuestions.length);
-    const questionPath = unusedQuestions[randomIndex];
-    room.usedQuestions.push(questionPath);
+    const questionUrl = unusedQuestions[randomIndex];
+    room.usedQuestions.push(questionUrl);
 
     return {
-        imagePath: questionPath,
+        imagePath: questionUrl, // This is now a direct URL
         options: ['A', 'B', 'C', 'D'],
-        correctAnswer: questionAnswers[questionPath]
+        correctAnswer: questionAnswers[questionUrl]
     };
 }
 
@@ -393,12 +361,15 @@ function hasEnoughQuestions(room) {
     let totalQuestions = 0;
 
     if (room.subjects.includes('All')) {
-        totalQuestions = questionImages.Physics.length +
-            questionImages.Chemistry.length +
-            questionImages.Maths.length;
+        // Sum up questions from all subjects
+        Object.values(questionsBySubject).forEach(questions => {
+            totalQuestions += questions.length;
+        });
     } else {
         room.subjects.forEach(subject => {
-            totalQuestions += questionImages[subject].length;
+            if (questionsBySubject[subject]) {
+                totalQuestions += questionsBySubject[subject].length;
+            }
         });
     }
 
@@ -425,7 +396,7 @@ io.on('connection', (socket) => {
         } else {
             // Filter out subjects that don't have enough questions
             selectedSubjects = selectedSubjects.filter(subject =>
-                questionImages[subject] && questionImages[subject].length >= MIN_QUESTIONS_REQUIRED
+                questionsBySubject[subject] && questionsBySubject[subject].length >= MIN_QUESTIONS_REQUIRED
             );
             if (selectedSubjects.length === 0) {
                 selectedSubjects = availableSubjects;
