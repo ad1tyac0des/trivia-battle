@@ -14,6 +14,13 @@ const physicsQuestions = [
 ];
 
 const chemistryQuestions = [
+    {url: 'https://i.imgur.com/n5ollph.png', answer: 'A'},
+    {url: 'https://i.imgur.com/7OERkhn.png', answer: 'D'},
+    {url: 'https://i.imgur.com/8whpoGa.png', answer: 'A'},
+    {url: 'https://i.imgur.com/eVhpykK.png', answer: 'B'},
+    {url: 'https://i.imgur.com/cFWlQbR.png', answer: 'A'},
+    {url: 'https://i.imgur.com/KyxYeEV.png', answer: 'A'},
+    {url: 'https://i.imgur.com/IP17nJP.png', answer: 'C'},
 ];
 
 const mathsQuestions = [
