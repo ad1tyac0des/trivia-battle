@@ -567,10 +567,20 @@ function displayQuestionHistory(questionHistory) {
         const answerSummary = document.createElement('div');
         answerSummary.className = 'answer-summary';
         
-        // Add correct answer
+        // Add correct answer with new design
         const correctAnswer = document.createElement('div');
         correctAnswer.className = 'correct-answer';
-        correctAnswer.textContent = `Correct Answer: ${question.correctAnswer}`;
+        
+        const correctAnswerText = document.createElement('span');
+        correctAnswerText.className = 'correct-answer-text';
+        correctAnswerText.textContent = 'Correct Answer';
+        
+        const correctAnswerOption = document.createElement('span');
+        correctAnswerOption.className = 'correct-answer-option';
+        correctAnswerOption.textContent = question.correctAnswer;
+        
+        correctAnswer.appendChild(correctAnswerText);
+        correctAnswer.appendChild(correctAnswerOption);
         answerSummary.appendChild(correctAnswer);
         
         // Add player answers
@@ -581,9 +591,11 @@ function displayQuestionHistory(questionHistory) {
             playerAnswer.className = `player-answer ${isCorrect ? 'correct' : 'incorrect'}`;
             
             const nameSpan = document.createElement('span');
+            nameSpan.className = 'player-name';
             nameSpan.textContent = playerName === playerData.name ? 'You' : playerName;
             
             const answerSpan = document.createElement('span');
+            answerSpan.className = 'player-answer-text';
             answerSpan.textContent = `Answer: ${playerAnswers[playerName]}`;
             
             playerAnswer.appendChild(nameSpan);
