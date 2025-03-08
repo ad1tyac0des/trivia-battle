@@ -852,10 +852,10 @@ button:hover {
     }
 
     #game-over .question-history {
-        padding: 0px;
+        padding: 1px;
     }
 
     .card {
-        padding: 40px 0px 40px 0px;
+        padding: 40px 10px 40px 10px;
     }
 }
