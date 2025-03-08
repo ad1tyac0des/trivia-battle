@@ -83,7 +83,7 @@ function initializeSubjectSelection(subjects) {
     const allSubjectsBtn = document.createElement('button');
     allSubjectsBtn.className = 'subject-btn selected';
     allSubjectsBtn.dataset.subject = 'All';
-    allSubjectsBtn.textContent = 'All Available';
+    allSubjectsBtn.textContent = 'All';
     subjectSelection.appendChild(allSubjectsBtn);
 
     // Add individual subject buttons
@@ -238,15 +238,15 @@ function updateGameDisplay() {
     if (gameState.opponent) {
         opponentNameDisplay.textContent = gameState.opponent.name;
     } else {
-        opponentNameDisplay.textContent = 'Opponent';
+        opponentNameDisplay.textContent = 'Opp';
     }
 
     // Update score display based on player role
     if (playerData.role === 'player1') {
         player1Score.textContent = `You: 0`;
-        player2Score.textContent = `Opponent: 0`;
+        player2Score.textContent = `Opp: 0`;
     } else {
-        player1Score.textContent = `Opponent: 0`;
+        player1Score.textContent = `Opp: 0`;
         player2Score.textContent = `You: 0`;
     }
 }
@@ -302,9 +302,9 @@ function submitAnswer(answer) {
 function updateScores(scores) {
     if (playerData.role === 'player1') {
         player1Score.textContent = `You: ${scores.player1}`;
-        player2Score.textContent = `Opponent: ${scores.player2}`;
+        player2Score.textContent = `Opp: ${scores.player2}`;
     } else {
-        player1Score.textContent = `Opponent: ${scores.player1}`;
+        player1Score.textContent = `Opp: ${scores.player1}`;
         player2Score.textContent = `You: ${scores.player2}`;
     }
 }
@@ -503,13 +503,16 @@ socket.on('game-over', (data) => {
 
     finalScores.textContent = `You: ${yourRoundWins} - Opponent: ${opponentRoundWins}`;
 
-    // Display winner
+    // Display winner with color
     if (data.winner === playerData.role) {
         winnerDisplay.textContent = 'You Win!';
+        winnerDisplay.className = 'winner you-win';
     } else if (data.winner === null) {
         winnerDisplay.textContent = 'It\'s a Tie!';
+        winnerDisplay.className = 'winner tie';
     } else {
         winnerDisplay.textContent = 'Opponent Wins!';
+        winnerDisplay.className = 'winner opponent-wins';
     }
 
     // Show time expired message if applicable
