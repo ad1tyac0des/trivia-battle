@@ -15,8 +15,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 const MAX_PLAYERS = 2; // 1v1 format
 const ROUNDS_TO_WIN = 4; // First to win 4 rounds wins the match
 const MAX_ROUNDS = 7; // Maximum possible rounds in a match
-const MATCH_TIME = 14 * 60; // 14 minutes in seconds
-const ROUND_TIME = 2 * 60; // 2 minutes per round in seconds
+const MATCH_TIME = 28 * 60; // 28 minutes in seconds
+const ROUND_TIME = 4 * 60; // 4 minutes per round in seconds
 
 // Game rooms storage
 const gameRooms = {};
